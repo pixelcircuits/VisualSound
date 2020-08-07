@@ -50,7 +50,7 @@ c) Set a "pretty" bluetooth name
 sudo hostnamectl set-hostname --pretty "VisualSound"
 ```
 
-### 3. Dispable the onboard audio
+### 3. Disable the onboard audio
 a) Both the LED Panel and LED Strip library need exclusive access to the PWM module, so the onboard audio needs to be disabled
 ```
 sudo nano /boot/config.txt
