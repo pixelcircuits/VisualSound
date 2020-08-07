@@ -211,7 +211,7 @@ int main(int argc, char** argv)
 		soundAnalyzer->refresh();
 		visualizers[visualizer]->draw(elapsedTime);
 		if(editMode==1) core_drawEditMode();
-			
+		
 		//flush to display
 		videoDriver->flush();
 	}
@@ -334,8 +334,11 @@ void core_loadVideoSettings(struct LEDPanelOptions** panel, struct LEDStripOptio
 		led_setStripDefaults(&stripDefaults);
 		ledStripOptions.dimension_x = settingsManager->getPropertyInteger("video.led_strip.dimension_x", stripDefaults.dimension_x);
 		ledStripOptions.dimension_y = settingsManager->getPropertyInteger("video.led_strip.dimension_y", stripDefaults.dimension_y);
-		settingsManager->getPropertyString("video.led_strip.layout", stripDefaults.layout, ledStripOptions.layout, 8);	
 		ledStripOptions.skip = settingsManager->getPropertyInteger("video.led_strip.skip", stripDefaults.skip);
+		settingsManager->getPropertyString("video.led_strip.layout", stripDefaults.layout, ledStripOptions.layout, 4);
+		settingsManager->getPropertyString("video.led_strip.rgb_sequence", stripDefaults.rgb_sequence, ledStripOptions.rgb_sequence, 8);
+		ledStripOptions.frequency = settingsManager->getPropertyInteger("video.led_strip.frequency", stripDefaults.frequency);
+		ledStripOptions.invert = settingsManager->getPropertyInteger("video.led_strip.invert", stripDefaults.invert);
 		ledStripOptions.mirror_x = settingsManager->getPropertyInteger("video.led_strip.mirror_x", stripDefaults.mirror_x);
 		ledStripOptions.mirror_y = settingsManager->getPropertyInteger("video.led_strip.mirror_y", stripDefaults.mirror_y);
 		*strip = &ledStripOptions;

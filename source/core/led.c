@@ -149,7 +149,7 @@ void led_write(int x, int y, unsigned char red, unsigned char green, unsigned ch
 				if((x%2)==1) y = (led_stripOptions.dimension_y-1) - y;
 				n += x*led_stripOptions.dimension_y + y;
 			}
-			int color = (int)(red) << 16 + (int)(green) << 8 + (int)(blue) << 0;
+			int color = ((int)(red) << 16) + ((int)(green) << 8) + ((int)(blue) << 0);
 			led_string.channel[0].leds[n] = color;
 		}
 	}
@@ -222,7 +222,7 @@ void led_setStripDefaults(struct LEDStripOptions* options)
 	options->layout[3] = 0;
 	strncpy(options->layout, "XY", 3);
 	options->rgb_sequence[7] = 0;
-	strncpy(options->rgb_sequence, "RGB", 7);
+	strncpy(options->rgb_sequence, "GRB", 7);
 	options->frequency = 800000;
 	options->invert = 0;
 	options->mirror_x = 0;

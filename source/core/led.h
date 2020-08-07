@@ -29,7 +29,7 @@ struct LEDStripOptions {
 	int dimension_y;                /* Y dimension of the strip (default 16) */
 	int skip;                       /* Number of leds to skip over (default 0) */
 	char layout[4];                 /* Strip layout ("XY" vs "YX"; default "XY") */
-	char rgb_sequence[8];           /* The "RGB(W)" sequence (default "RGB") */
+	char rgb_sequence[8];           /* The "RGB(W)" sequence (default "GRB") */
 	int frequency;                  /* The target data frequency (default 800000) */
 	int invert;                     /* Flag to invert colors (default 0) */
 	int mirror_x;                   /* Flag to mirror on the x axis (default 0) */
