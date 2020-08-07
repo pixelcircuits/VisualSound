@@ -1,0 +1,60 @@
+#general
+system.volume= 75
+system.brightness= 90
+
+#default visualizer
+visualizer.default.index= 0
+visualizer.default.style= 0
+visualizer.default.colorp.red= 22
+visualizer.default.colorp.green= 22
+visualizer.default.colorp.blue= 229
+visualizer.default.colors.red= 229
+visualizer.default.colors.green= 22
+visualizer.default.colors.blue= 22
+
+#input keycodes
+input.code.up= 103
+input.code.down= 108
+input.code.left= 105
+input.code.right= 106
+input.code.home= 172
+input.code.menu= 127
+input.code.back= 1
+input.code.ok= 28
+input.code.volup= 115
+input.code.voldown= 114
+input.code.pwr= 116
+
+#video driver
+video.system.size_x=96
+video.system.size_y=48
+video.system.oversample=2
+video.system.rotation=0
+video.system.driver=led_panel
+video.led_panel.led_rows=16
+video.led_panel.led_cols=32
+video.led_panel.led_chain=3
+video.led_panel.led_parallel=3
+#video.led_panel.led_pwm_bits=
+#video.led_panel.led_pwm_lsb_nanoseconds=
+#video.led_panel.led_pwm_dither_bits=
+#video.led_panel.led_scan_mode=
+#video.led_panel.led_row_addr_type=
+#video.led_panel.led_multiplexing=
+#video.led_panel.led_gpio_mapping=
+#video.led_panel.led_rgb_sequence=
+#video.led_panel.led_pixel_mapper=
+#video.led_panel.led_panel_type=
+#video.led_panel.led_no_hardware_pulse=
+#video.led_panel.led_inverse=
+#video.led_panel.led_mirror_x=
+#video.led_panel.led_mirror_y=
+#video.led_strip.dimension_x=
+#video.led_strip.dimension_y=
+#video.led_strip.skip=
+#video.led_strip.layout=
+#video.led_strip.rgb_sequence=
+#video.led_strip.frequency=
+#video.led_strip.invert=
+#video.led_strip.mirror_x=
+#video.led_strip.mirror_y=
