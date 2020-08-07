@@ -79,6 +79,7 @@ a) Run the following commands to download the source code and build the VisualSo
 cd /home/pi
 git clone https://github.com/pixelcircuits/VisualSound.git
 cd VisualSound
+mkdir build
 make
 ```
 b) To have the application run on boot add the following lines before the exit line to rc.local
