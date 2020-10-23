@@ -176,6 +176,11 @@ static void* pair_processBluetoothDevices(void* args)
 				snd_playFile("data/device-removed.wav");
 				bt_discoverableOn();
 			}
+			
+			//make sure device is set for sound
+			else if(!snd_getIsRunning()) {
+				pair_setDevice(&selectedDevice);
+			}
 		} else {
 		
 			//loop through devices to try to connect new audio device
@@ -195,7 +200,10 @@ static void* pair_processBluetoothDevices(void* args)
 					bt_discoverableOff();
 					snd_playFile("data/device-added.wav");
 					strcpy(selectedDevice.mac, deviceList[i]->mac);
-					pair_setDevice(&selectedDevice);
+					
+					//make sure device is trusted and connected
+					bt_trustDevice(deviceList[i]->mac);
+					bt_connectDevice(deviceList[i]->mac);
 					break;
 				}
 			}
