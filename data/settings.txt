@@ -11,6 +11,7 @@ visualizer.default.colorp.blue= 229
 visualizer.default.colors.red= 229
 visualizer.default.colors.green= 22
 visualizer.default.colors.blue= 22
+#visualizer.default.randomizer= 1
 
 #input keycodes
 input.code.up= 103

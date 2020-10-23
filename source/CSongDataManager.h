@@ -37,6 +37,9 @@ public:
 	//! Saves the given song data
 	void saveSongData(const char* artist, const char* album, const char* title, int visualizer, int style, Color colorPrimary, Color colorSecondary);
 	
+	//! Enables the song data defaulter
+	void enableDefaulter(bool enabled);
+	
 private:
 	std::string fileData;
 	const char* filePath;
@@ -44,9 +47,10 @@ private:
 	int style;
 	Color colorPrimary;
 	Color colorSecondary;
+	bool defaulterEnabled;
 
 	//Util functions
-	void saveFile();
+	unsigned long hashStr(const char *str, unsigned long hash);
 };
 
 #endif

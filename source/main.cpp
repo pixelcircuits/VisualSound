@@ -37,6 +37,7 @@
 #define DEFAULT_VISUALIZER_COLORS_R 229
 #define DEFAULT_VISUALIZER_COLORS_G 22
 #define DEFAULT_VISUALIZER_COLORS_B 22
+#define DEFAULT_VISUALIZER_RANDOMIZER 0
 
 #define DEFAULT_VIDEO_SIZE_X 32
 #define DEFAULT_VIDEO_SIZE_Y 16
@@ -65,6 +66,7 @@ int defaultVisualizer;
 int defaultStyle;
 Color defaultPrimaryColor;
 Color defaultSecondaryColor;
+bool defaultRandomizer;
 	
 //functions
 void core_initSettings();
@@ -112,6 +114,9 @@ int main(int argc, char** argv)
 	core_initButtons();
 	core_initSettings();
 	
+	//set manager parameters
+	songDataManager->enableDefaulter(defaultRandomizer);
+	
 	//init visualizers
 	const int numVisualizers = 4;
 	IVisualizer* visualizers[numVisualizers];
@@ -137,8 +142,8 @@ int main(int argc, char** argv)
 		//check track change
 		if(core_checkTrackData()) {
 			if(songDataManager->findSongData(pair_mediaGetTrackArtist(), pair_mediaGetTrackAlbum(), pair_mediaGetTrackTitle())) {
-				int songVisualizer = songDataManager->getVisualizer();
-				if(songVisualizer < numVisualizers && songVisualizer != visualizer) {
+				int songVisualizer = songDataManager->getVisualizer() % numVisualizers;
+				if(songVisualizer != visualizer) {
 					visualizers[visualizer]->clear();
 					visualizers[songVisualizer]->setup();
 					visualizer = songVisualizer;
@@ -147,8 +152,8 @@ int main(int argc, char** argv)
 				visualizers[visualizer]->setColors(songDataManager->getColorPrimary(), songDataManager->getColorSecondary());
 			} else {
 				//no saved settings, use defaults
-				int songVisualizer = (defaultVisualizer < numVisualizers) ? defaultVisualizer : 0;
-				if(songVisualizer < numVisualizers && songVisualizer != visualizer) {
+				int songVisualizer = defaultVisualizer % numVisualizers;
+				if(songVisualizer != visualizer) {
 					visualizers[visualizer]->clear();
 					visualizers[songVisualizer]->setup();
 					visualizer = songVisualizer;
@@ -241,6 +246,7 @@ void core_initSettings() {
 	defaultSecondaryColor = Color(settingsManager->getPropertyInteger("visualizer.default.colors.red", DEFAULT_VISUALIZER_COLORS_R), 
 		settingsManager->getPropertyInteger("visualizer.default.colors.green", DEFAULT_VISUALIZER_COLORS_G), 
 		settingsManager->getPropertyInteger("visualizer.default.colors.blue", DEFAULT_VISUALIZER_COLORS_B));
+	defaultRandomizer = settingsManager->getPropertyInteger("visualizer.default.randomizer", DEFAULT_VISUALIZER_RANDOMIZER) > 0;
 	
 	int code;
 	code = settingsManager->getPropertyInteger("input.code.up", -1);

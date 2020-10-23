@@ -12,7 +12,7 @@
 
 //! Main constructor
 CSongDataManager::CSongDataManager(const char* filePath) :
-	visualizer(0), style(0), colorPrimary(155,155,155), colorSecondary(155,155,155)
+	visualizer(0), style(0), colorPrimary(155,155,155), colorSecondary(155,155,155), defaulterEnabled(false)
 {
 	this->filePath = filePath;
 	if(filePath) {
@@ -50,6 +50,32 @@ bool CSongDataManager::findSongData(const char* artist, const char* album, const
 				colorSecondary = Color(cs[0],cs[1],cs[2]);
 				return true;
 			}
+		} else if(defaulterEnabled) {
+			unsigned long hash = 5381;
+			hash = hashStr(artist, hash);
+			hash = hashStr(album, hash);
+			hash = hashStr(title, hash);
+			
+			visualizer = hashStr("visualizer", hash) % 100;
+			style = hashStr("style", hash) % 100;
+			
+			const int numColors = 36;
+			unsigned long color = hashStr("color", hash) % 36;
+			if(color < (numColors/4)*1) {
+				colorPrimary = Color::fromHSV(((color-(numColors/4)*0)*(360/(numColors/4)))%360,90,90);
+				colorSecondary = Color::fromHSV((((color-(numColors/4)*0)*(360/(numColors/4))+40))%360,90,90);
+			} else if(color < (numColors/4)*2) {
+				colorPrimary = Color::fromHSV(((color-(numColors/4)*1)*(360/(numColors/4)))%360,90,90);
+				colorSecondary = Color::fromHSV((((color-(numColors/4)*1)*(360/(numColors/4))+80))%360,90,90);
+			} else if(color < (numColors/4)*3) {
+				colorPrimary = Color::fromHSV(((color-(numColors/4)*2)*(360/(numColors/4)))%360,90,90);
+				colorSecondary = Color::fromHSV((((color-(numColors/4)*2)*(360/(numColors/4))+120))%360,90,90);
+			} else {
+				colorPrimary = Color::fromHSV(((color-(numColors/4)*3)*(360/(numColors/4)))%360,90,90);
+				colorSecondary = Color(0,0,0);
+			}
+			
+			return true;
 		}
 	}
 	return false;
@@ -115,4 +141,22 @@ void CSongDataManager::saveSongData(const char* artist, const char* album, const
 		out << fileData;
 		out.close();
 	}
+}
+
+//! Enables the song data defaulter
+void CSongDataManager::enableDefaulter(bool enabled)
+{
+	defaulterEnabled = enabled;
+}
+
+//! Generates hash from given string
+unsigned long CSongDataManager::hashStr(const char *str, unsigned long hash)
+{
+	if(!str) return hash;
+	while(*str) {
+		unsigned long c = *str;
+		hash = ((hash << 5) + hash) + c; // hash * 33 + c 
+		str++;
+	}
+	return hash;
 }
