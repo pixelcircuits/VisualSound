@@ -33,6 +33,8 @@ static char* inp_deviceName[MAX_DEVICES];
 static clock_t inp_lastDeviceUpdate = 0;
 static int inp_keyPresses[INP_BTN_TOTAL];
 static int inp_keyCodes[INP_BTN_TOTAL];
+static char inp_keyHold[INP_BTN_TOTAL];
+static char inp_keyTouched[INP_BTN_TOTAL];
 static unsigned char inp_buttonStates[INP_BTN_TOTAL];
 static pthread_t inp_threadId = -1;
 
@@ -103,47 +105,47 @@ char inp_isInit()
 // Updates the button holding state
 void inp_updateButtonState()
 {
-	if(inp_keyPresses[INP_BTN_UP] > 0) {
+	if(inp_keyPresses[INP_BTN_UP] > 0 || (inp_keyHold[INP_BTN_UP] && inp_keyTouched[INP_BTN_UP])) {
 		if(inp_buttonStates[INP_BTN_UP] < 255) inp_buttonStates[INP_BTN_UP]++;
 	} else inp_buttonStates[INP_BTN_UP] = 0;
 	
-	if(inp_keyPresses[INP_BTN_DOWN] > 0) {
+	if(inp_keyPresses[INP_BTN_DOWN] > 0 || (inp_keyHold[INP_BTN_DOWN] && inp_keyTouched[INP_BTN_DOWN])) {
 		if(inp_buttonStates[INP_BTN_DOWN] < 255) inp_buttonStates[INP_BTN_DOWN]++;
 	} else inp_buttonStates[INP_BTN_DOWN] = 0;
 	
-	if(inp_keyPresses[INP_BTN_LEFT] > 0) {
+	if(inp_keyPresses[INP_BTN_LEFT] > 0 || (inp_keyHold[INP_BTN_LEFT] && inp_keyTouched[INP_BTN_LEFT])) {
 		if(inp_buttonStates[INP_BTN_LEFT] < 255) inp_buttonStates[INP_BTN_LEFT]++;
 	} else inp_buttonStates[INP_BTN_LEFT] = 0;
 	
-	if(inp_keyPresses[INP_BTN_RIGHT] > 0) {
+	if(inp_keyPresses[INP_BTN_RIGHT] > 0 || (inp_keyHold[INP_BTN_RIGHT] && inp_keyTouched[INP_BTN_RIGHT])) {
 		if(inp_buttonStates[INP_BTN_RIGHT] < 255) inp_buttonStates[INP_BTN_RIGHT]++;
 	} else inp_buttonStates[INP_BTN_RIGHT] = 0;
 	
-	if(inp_keyPresses[INP_BTN_HOME] > 0) {
+	if(inp_keyPresses[INP_BTN_HOME] > 0 || (inp_keyHold[INP_BTN_HOME] && inp_keyTouched[INP_BTN_HOME])) {
 		if(inp_buttonStates[INP_BTN_HOME] < 255) inp_buttonStates[INP_BTN_HOME]++;
 	} else inp_buttonStates[INP_BTN_HOME] = 0;
 	
-	if(inp_keyPresses[INP_BTN_MENU] > 0) {
+	if(inp_keyPresses[INP_BTN_MENU] > 0 || (inp_keyHold[INP_BTN_MENU] && inp_keyTouched[INP_BTN_MENU])) {
 		if(inp_buttonStates[INP_BTN_MENU] < 255) inp_buttonStates[INP_BTN_MENU]++;
 	} else inp_buttonStates[INP_BTN_MENU] = 0;
 	
-	if(inp_keyPresses[INP_BTN_BACK] > 0) {
+	if(inp_keyPresses[INP_BTN_BACK] > 0 || (inp_keyHold[INP_BTN_BACK] && inp_keyTouched[INP_BTN_BACK])) {
 		if(inp_buttonStates[INP_BTN_BACK] < 255) inp_buttonStates[INP_BTN_BACK]++;
 	} else inp_buttonStates[INP_BTN_BACK] = 0;
 	
-	if(inp_keyPresses[INP_BTN_OK] > 0) {
+	if(inp_keyPresses[INP_BTN_OK] > 0 || (inp_keyHold[INP_BTN_OK] && inp_keyTouched[INP_BTN_OK])) {
 		if(inp_buttonStates[INP_BTN_OK] < 255) inp_buttonStates[INP_BTN_OK]++;
 	} else inp_buttonStates[INP_BTN_OK] = 0;
 	
-	if(inp_keyPresses[INP_BTN_VOLUP] > 0) {
+	if(inp_keyPresses[INP_BTN_VOLUP] > 0 || (inp_keyHold[INP_BTN_VOLUP] && inp_keyTouched[INP_BTN_VOLUP])) {
 		if(inp_buttonStates[INP_BTN_VOLUP] < 255) inp_buttonStates[INP_BTN_VOLUP]++;
 	} else inp_buttonStates[INP_BTN_VOLUP] = 0;
 	
-	if(inp_keyPresses[INP_BTN_VOLDOWN] > 0) {
+	if(inp_keyPresses[INP_BTN_VOLDOWN] > 0 || (inp_keyHold[INP_BTN_VOLDOWN] && inp_keyTouched[INP_BTN_VOLDOWN])) {
 		if(inp_buttonStates[INP_BTN_VOLDOWN] < 255) inp_buttonStates[INP_BTN_VOLDOWN]++;
 	} else inp_buttonStates[INP_BTN_VOLDOWN] = 0;
 	
-	if(inp_keyPresses[INP_BTN_PWR] > 0) {
+	if(inp_keyPresses[INP_BTN_PWR] > 0 || (inp_keyHold[INP_BTN_PWR] && inp_keyTouched[INP_BTN_PWR])) {
 		if(inp_buttonStates[INP_BTN_PWR] < 255) inp_buttonStates[INP_BTN_PWR]++;
 	} else inp_buttonStates[INP_BTN_PWR] = 0;
 }
@@ -160,6 +162,15 @@ void inp_setButtonCode(char button, int code)
 {
 	if(button >= 0 && button < INP_BTN_TOTAL) {
 		inp_keyCodes[button] = code;
+	}
+}
+
+// Sets if the button should never be considered off
+void inp_setButtonHold(char button, char hold)
+{
+	if(button >= 0 && button < INP_BTN_TOTAL) {
+		inp_keyHold[button] = hold;
+		inp_keyTouched[button] = 0;
 	}
 }
 
@@ -195,50 +206,62 @@ static void inp_checkButtonInput() {
 			int count = rd / sizeof(struct input_event);
 			for(n=0; n<count; n++) {
 				struct input_event *evp = &ev[n];
+				//printf("type:%d, code:%d, value:%d\n", evp->type, evp->code, evp->value);
 				if(evp->type == 1) {
 					if(evp->code == inp_keyCodes[INP_BTN_UP]) {
 						if(evp->value == 0) inp_keyPresses[INP_BTN_UP]--;
 						if(evp->value == 1) inp_keyPresses[INP_BTN_UP]++;
+						if(evp->value == 1) inp_keyTouched[INP_BTN_UP] = 1;
 						if(inp_keyPresses[INP_BTN_UP] < 0) inp_keyPresses[INP_BTN_UP] = 0;
 					} else if(evp->code == inp_keyCodes[INP_BTN_DOWN]) {
 						if(evp->value == 0) inp_keyPresses[INP_BTN_DOWN]--;
 						if(evp->value == 1) inp_keyPresses[INP_BTN_DOWN]++;
+						if(evp->value == 1) inp_keyTouched[INP_BTN_DOWN] = 1;
 						if(inp_keyPresses[INP_BTN_DOWN] < 0) inp_keyPresses[INP_BTN_DOWN] = 0;
 					} else if(evp->code == inp_keyCodes[INP_BTN_LEFT]) {
 						if(evp->value == 0) inp_keyPresses[INP_BTN_LEFT]--;
 						if(evp->value == 1) inp_keyPresses[INP_BTN_LEFT]++;
+						if(evp->value == 1) inp_keyTouched[INP_BTN_LEFT] = 1;
 						if(inp_keyPresses[INP_BTN_LEFT] < 0) inp_keyPresses[INP_BTN_LEFT] = 0;
 					} else if(evp->code == inp_keyCodes[INP_BTN_RIGHT]) {
 						if(evp->value == 0) inp_keyPresses[INP_BTN_RIGHT]--;
 						if(evp->value == 1) inp_keyPresses[INP_BTN_RIGHT]++;
+						if(evp->value == 1) inp_keyTouched[INP_BTN_RIGHT] = 1;
 						if(inp_keyPresses[INP_BTN_RIGHT] < 0) inp_keyPresses[INP_BTN_RIGHT] = 0;
 					} else if(evp->code == inp_keyCodes[INP_BTN_HOME]) {
 						if(evp->value == 0) inp_keyPresses[INP_BTN_HOME]--;
 						if(evp->value == 1) inp_keyPresses[INP_BTN_HOME]++;
+						if(evp->value == 1) inp_keyTouched[INP_BTN_HOME] = 1;
 						if(inp_keyPresses[INP_BTN_HOME] < 0) inp_keyPresses[INP_BTN_HOME] = 0;
 					} else if(evp->code == inp_keyCodes[INP_BTN_MENU]) {
 						if(evp->value == 0) inp_keyPresses[INP_BTN_MENU]--;
 						if(evp->value == 1) inp_keyPresses[INP_BTN_MENU]++;
+						if(evp->value == 1) inp_keyTouched[INP_BTN_MENU] = 1;
 						if(inp_keyPresses[INP_BTN_MENU] < 0) inp_keyPresses[INP_BTN_MENU] = 0;
 					} else if(evp->code == inp_keyCodes[INP_BTN_BACK]) {
 						if(evp->value == 0) inp_keyPresses[INP_BTN_BACK]--;
 						if(evp->value == 1) inp_keyPresses[INP_BTN_BACK]++;
+						if(evp->value == 1) inp_keyTouched[INP_BTN_BACK] = 1;
 						if(inp_keyPresses[INP_BTN_BACK] < 0) inp_keyPresses[INP_BTN_BACK] = 0;
 					} else if(evp->code == inp_keyCodes[INP_BTN_OK]) {
 						if(evp->value == 0) inp_keyPresses[INP_BTN_OK]--;
 						if(evp->value == 1) inp_keyPresses[INP_BTN_OK]++;
+						if(evp->value == 1) inp_keyTouched[INP_BTN_OK] = 1;
 						if(inp_keyPresses[INP_BTN_OK] < 0) inp_keyPresses[INP_BTN_OK] = 0;
 					} else if(evp->code == inp_keyCodes[INP_BTN_VOLUP]) {
 						if(evp->value == 0) inp_keyPresses[INP_BTN_VOLUP]--;
 						if(evp->value == 1) inp_keyPresses[INP_BTN_VOLUP]++;
+						if(evp->value == 1) inp_keyTouched[INP_BTN_VOLUP] = 1;
 						if(inp_keyPresses[INP_BTN_VOLUP] < 0) inp_keyPresses[INP_BTN_VOLUP] = 0;
 					} else if(evp->code == inp_keyCodes[INP_BTN_VOLDOWN]) {
 						if(evp->value == 0) inp_keyPresses[INP_BTN_VOLDOWN]--;
 						if(evp->value == 1) inp_keyPresses[INP_BTN_VOLDOWN]++;
+						if(evp->value == 1) inp_keyTouched[INP_BTN_VOLDOWN] = 1;
 						if(inp_keyPresses[INP_BTN_VOLDOWN] < 0) inp_keyPresses[INP_BTN_VOLDOWN] = 0;
 					} else if(evp->code == inp_keyCodes[INP_BTN_PWR]) {
 						if(evp->value == 0) inp_keyPresses[INP_BTN_PWR]--;
 						if(evp->value == 1) inp_keyPresses[INP_BTN_PWR]++;
+						if(evp->value == 1) inp_keyTouched[INP_BTN_PWR] = 1;
 						if(inp_keyPresses[INP_BTN_PWR] < 0) inp_keyPresses[INP_BTN_PWR] = 0;
 					}
 				}

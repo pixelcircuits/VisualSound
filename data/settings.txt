@@ -1,6 +1,7 @@
 #general
 system.volume= 75
 system.brightness= 90
+system.poweroff.hold= 1
 
 #default visualizer
 visualizer.default.index= 0

@@ -33,6 +33,9 @@ unsigned char inp_getButtonState(char button);
 // Sets the input device code for the given button
 void inp_setButtonCode(char button, int code);
 
+// Sets if the button should never be considered off
+void inp_setButtonHold(char button, char hold);
+
 // Closes the Controller interface
 int inp_close();
 

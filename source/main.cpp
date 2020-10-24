@@ -237,6 +237,7 @@ int main(int argc, char** argv)
 void core_initSettings() {
 	snd_setVolume(settingsManager->getPropertyInteger("system.volume", 80));
 	led_setBrightness(settingsManager->getPropertyInteger("system.brightness", 80));
+	inp_setButtonHold(INP_BTN_PWR, (~settingsManager->getPropertyInteger("system.poweroff.hold", 1)) & 0x01);
 	
 	defaultVisualizer = settingsManager->getPropertyInteger("visualizer.default.index", DEFAULT_VISUALIZER_INDEX);
 	defaultStyle = settingsManager->getPropertyInteger("visualizer.default.style", DEFAULT_VISUALIZER_STYLE);
