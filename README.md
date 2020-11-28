@@ -57,7 +57,7 @@ sudo nano /boot/config.txt
    dtparam=audio=off
 ```
 
-### 4. Install the LED Panel and LED Strip library
+### 4. Install the library for SPI
 a) Run the following commands to install the library used for SPI
 ```
 sudo apt-get install wiringpi
