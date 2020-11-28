@@ -14,7 +14,7 @@ class CVideoDriver
 {
 public:
 	//! Main constructor
-	CVideoDriver(Vector size, unsigned int oversample, unsigned int rotation);
+	CVideoDriver(Vector size, unsigned int oversample);
 
 	//! Destructor
 	~CVideoDriver();
@@ -27,12 +27,6 @@ public:
 
 	//! Gets the brightness value
 	char getBrightness() const;
-
-	//! Sets the rotation value (0, 90, 180, 270)
-	void setRotation(unsigned int rotation);
-
-	//! Gets the rotation value (0, 90, 180, 270)
-	unsigned int getRotation() const;
 	
 	//! Gets the dimension of the video buffer (size*overSample)
 	Vector getDimension() const;
@@ -51,6 +45,9 @@ public:
 
 	//! Draws a quad
 	void drawQuad(Vector pos0, Color color0, Vector pos1, Color color1, Vector pos2, Color color2, Vector pos3, Color color3);
+	
+	//! Post process brightness multiplier
+	void ppBrightness(float multiplier);
 
 	//! Sends the video data to the display
 	void flush();
@@ -58,21 +55,19 @@ public:
 private:
 	unsigned char* videoBuffer;
 	unsigned int videoOversample;
-	Vector videoSize;
-	unsigned int videoBaseRotation;
-	unsigned int videoRotation;
-	unsigned char videoXYFlip;
 	Vector videoDimension;
-	Vector videoMirror;
 
 	//! Gets color at given point
 	Color getPoint(Vector pos);
-
-	//! Calculates the mirror and dimension values for a given angle
-	void calcRotation(int angle);
 	
 	//! Draws a line and records the outline to memory
-	void drawLine_mem(Vector pos0, Color color0, Vector pos1, Color color1, int mem[][2], Color memc[][2]);
+	void drawLine_mem(Vector pos0, Color color0, Vector pos1, Color color1, int format, int mem[][2][2], Color memC[][2]);
+	
+	//! Records the correct data into the memory arrays
+	void record_mem(int x, int y, int z, Color color, int format, int mem[][2][2], Color memC[][2]);
+	
+	//! Determines color blend from given data
+	Color blendColor(Color color0, Color color1, int start, int end, int value);
 };
 
 #endif
