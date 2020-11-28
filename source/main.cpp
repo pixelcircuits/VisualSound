@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------------------
-// Title:	Music and Sound Visualizer
+// Title:   Music and Sound Visualizer
 // Program: VisualSound
 // Authors: Stephen Monn
 //-----------------------------------------------------------------------------------------
@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+#include <sys/time.h>
 #include "led.h"
 #include "inp.h"
 #include "bt.h"
@@ -27,7 +27,7 @@
 
 #define BUTTON_HOLD_MILLIS 500
 #define BUTTON_CONT_MILLIS 200
-#define SHUTDOWN_MILLIS 4000
+#define SHUTDOWN_MILLIS 2000
 
 #define DEFAULT_VISUALIZER_INDEX 0
 #define DEFAULT_VISUALIZER_STYLE 0
@@ -38,6 +38,7 @@
 #define DEFAULT_VISUALIZER_COLORS_G 22
 #define DEFAULT_VISUALIZER_COLORS_B 22
 #define DEFAULT_VISUALIZER_RANDOMIZER 0
+#define DEFAULT_VISUALIZER_RANDOMIZER_TIME 0
 
 #define DEFAULT_VIDEO_SIZE_X 32
 #define DEFAULT_VIDEO_SIZE_Y 16
@@ -55,7 +56,8 @@ CSettingsManager* settingsManager=0;
 CSongDataManager* songDataManager=0;
 struct LEDPanelOptions ledPanelOptions;
 struct LEDStripOptions ledStripOptions;
-clock_t buttonTimeStamps[INP_BTN_TOTAL];
+double lastGetTime;
+double buttonTimeStamps[INP_BTN_TOTAL];
 int buttonTicks[INP_BTN_TOTAL];
 Color colorPalettePrimary[NUM_COLORS];
 Color colorPaletteSecondary[NUM_COLORS];
@@ -67,6 +69,8 @@ int defaultStyle;
 Color defaultPrimaryColor;
 Color defaultSecondaryColor;
 bool defaultRandomizer;
+int defaultRandomizerTime;
+double lastRandomizer;
 	
 //functions
 void core_initSettings();
@@ -75,10 +79,11 @@ void core_initTrackData();
 void core_initButtons();
 void core_loadVideoSettings(struct LEDPanelOptions** panel, struct LEDStripOptions** strip, Vector* size, int* oversample, int* rotation);
 bool core_checkTrackData();
-bool core_checkButtonState(char button, clock_t now);
+bool core_checkButtonState(char button, double now);
 void core_updateVolume(int change);
 void core_updateBrightness(int change);
 void core_drawEditMode();
+double core_getTime();
 void core_close();
 
 //program entry
@@ -113,6 +118,7 @@ int main(int argc, char** argv)
 	core_initTrackData();
 	core_initButtons();
 	core_initSettings();
+	lastRandomizer = 0;
 	
 	//set manager parameters
 	songDataManager->enableDefaulter(defaultRandomizer);
@@ -132,34 +138,49 @@ int main(int argc, char** argv)
 	visualizers[visualizer]->setColors(defaultPrimaryColor, defaultSecondaryColor);
 	
 	//loop
-	clock_t lastTick = clock();
+	double lastTick = core_getTime();
 	while(true) {
-		clock_t now = clock();
-		double elapsedTime = (double)(now - lastTick)/CLOCKS_PER_SEC;
-		lastTick = now;
-		//printf("Time elpased is %f seconds\n", elapsedTime);/////////////////////////////////////////////////////////////////////////////
+		double now = core_getTime();
 		
 		//check track change
-		if(core_checkTrackData()) {
-			if(songDataManager->findSongData(pair_mediaGetTrackArtist(), pair_mediaGetTrackAlbum(), pair_mediaGetTrackTitle())) {
-				int songVisualizer = songDataManager->getVisualizer() % numVisualizers;
+		if(defaultRandomizerTime == 0) {
+			if(core_checkTrackData()) {
+				if(songDataManager->findSongData(pair_mediaGetTrackArtist(), pair_mediaGetTrackAlbum(), pair_mediaGetTrackTitle())) {
+					int songVisualizer = songDataManager->getVisualizer() % numVisualizers;
+					if(songVisualizer != visualizer) {
+						visualizers[visualizer]->clear();
+						visualizers[songVisualizer]->setup();
+						visualizer = songVisualizer;
+					}
+					visualizers[visualizer]->setStyle(songDataManager->getStyle());
+					visualizers[visualizer]->setColors(songDataManager->getColorPrimary(), songDataManager->getColorSecondary());
+				} else {
+					//no saved settings, use defaults
+					int songVisualizer = defaultVisualizer % numVisualizers;
+					if(songVisualizer != visualizer) {
+						visualizers[visualizer]->clear();
+						visualizers[songVisualizer]->setup();
+						visualizer = songVisualizer;
+					}
+					visualizers[visualizer]->setStyle(defaultStyle);
+					visualizers[visualizer]->setColors(defaultPrimaryColor, defaultSecondaryColor);
+				}
+			}
+			
+		} else {
+			//check for randomizing visualizer
+			if((now - lastRandomizer) > defaultRandomizerTime) {
+				lastRandomizer = now;
+				
+				int randColor = rand()%NUM_COLORS;
+				int songVisualizer = rand()%numVisualizers;
 				if(songVisualizer != visualizer) {
 					visualizers[visualizer]->clear();
 					visualizers[songVisualizer]->setup();
 					visualizer = songVisualizer;
 				}
-				visualizers[visualizer]->setStyle(songDataManager->getStyle());
-				visualizers[visualizer]->setColors(songDataManager->getColorPrimary(), songDataManager->getColorSecondary());
-			} else {
-				//no saved settings, use defaults
-				int songVisualizer = defaultVisualizer % numVisualizers;
-				if(songVisualizer != visualizer) {
-					visualizers[visualizer]->clear();
-					visualizers[songVisualizer]->setup();
-					visualizer = songVisualizer;
-				}
-				visualizers[visualizer]->setStyle(defaultStyle);
-				visualizers[visualizer]->setColors(defaultPrimaryColor, defaultSecondaryColor);
+				visualizers[visualizer]->setStyle(rand()%100);
+				visualizers[visualizer]->setColors(colorPalettePrimary[randColor], colorPaletteSecondary[randColor]);
 			}
 		}
 		
@@ -167,6 +188,8 @@ int main(int argc, char** argv)
 		inp_updateButtonState();
 		core_checkButtonState(INP_BTN_PWR, now);
 		if((BUTTON_HOLD_MILLIS+buttonTicks[INP_BTN_PWR]*BUTTON_CONT_MILLIS) > SHUTDOWN_MILLIS) system("sudo shutdown now");
+		core_checkButtonState(INP_BTN_HOME, now);
+		if((BUTTON_HOLD_MILLIS+buttonTicks[INP_BTN_HOME]*BUTTON_CONT_MILLIS) > SHUTDOWN_MILLIS) break;
 		if(core_checkButtonState(INP_BTN_VOLUP, now)) core_updateVolume(5);
 		if(core_checkButtonState(INP_BTN_VOLDOWN, now)) core_updateVolume(-5);
 		if(editMode==0) {
@@ -181,6 +204,7 @@ int main(int argc, char** argv)
 			}
 			
 		} else {
+			lastRandomizer = now;
 			int oldVisualizer = visualizer;
 			int oldColor = color;
 			if(inp_getButtonState(INP_BTN_MENU)==1) {
@@ -209,11 +233,19 @@ int main(int argc, char** argv)
 			if(color >= NUM_COLORS) color = 0;
 			if(color != oldColor) {
 				visualizers[visualizer]->setColors(colorPalettePrimary[color], colorPaletteSecondary[color]);
-			}			
+			}
 		}
 		
-		//render
+		//run sound analysis
 		soundAnalyzer->refresh();
+		
+		//update time
+		double time = core_getTime();
+		double elapsedTime = time - lastTick;
+		lastTick = time;
+		//printf("Time elpased is %f seconds\n", elapsedTime);/////////////////////////////////////////////////////////////////////////////
+		
+		//render
 		visualizers[visualizer]->draw(elapsedTime);
 		if(editMode==1) core_drawEditMode();
 		
@@ -248,6 +280,7 @@ void core_initSettings() {
 		settingsManager->getPropertyInteger("visualizer.default.colors.green", DEFAULT_VISUALIZER_COLORS_G), 
 		settingsManager->getPropertyInteger("visualizer.default.colors.blue", DEFAULT_VISUALIZER_COLORS_B));
 	defaultRandomizer = settingsManager->getPropertyInteger("visualizer.default.randomizer", DEFAULT_VISUALIZER_RANDOMIZER) > 0;
+	defaultRandomizerTime = settingsManager->getPropertyInteger("visualizer.default.randomizer.time", DEFAULT_VISUALIZER_RANDOMIZER_TIME);
 	
 	int code;
 	code = settingsManager->getPropertyInteger("input.code.up", -1);
@@ -294,7 +327,7 @@ void core_initTrackData() {
 	trackArtist[TRACK_TITLE_LENGTH_MAX-1] = 0;
 }
 void core_initButtons() {
-	clock_t now = clock();
+	double now = core_getTime();
 	for(int i=0; i<INP_BTN_TOTAL; i++) {
 		buttonTimeStamps[i] = now;
 		buttonTicks[i] = 0;
@@ -368,13 +401,13 @@ bool core_checkTrackData() {
 	}	
 	return changed;
 }
-bool core_checkButtonState(char button, clock_t now) {
+bool core_checkButtonState(char button, double now) {
 	if(inp_getButtonState(button) == 1) {
 		buttonTimeStamps[button] = now;
 		buttonTicks[button] = 0;
 		return true;
 	} else if(inp_getButtonState(button) > 1) {
-		int millis = ((int)(now - buttonTimeStamps[button])*1000)/CLOCKS_PER_SEC;
+		int millis = (int)((now - buttonTimeStamps[button])*1000.0);
 		if(millis > BUTTON_HOLD_MILLIS + buttonTicks[button]*BUTTON_CONT_MILLIS) {
 			buttonTicks[button]++;
 			return true;
@@ -413,6 +446,13 @@ void core_drawEditMode() {
 	videoDriver->drawTri(Vector((videoDimX-1)-size,0), Color(255,255,255), Vector((videoDimX-1),0), Color(255,255,255), Vector((videoDimX-1),size), Color(255,255,255));
 	videoDriver->drawTri(Vector(size,(videoDimY-1)), Color(255,255,255), Vector(0,(videoDimY-1)), Color(255,255,255), Vector(0,(videoDimY-1)-size), Color(255,255,255));
 	videoDriver->drawTri(Vector((videoDimX-1)-size,(videoDimY-1)), Color(255,255,255), Vector((videoDimX-1),(videoDimY-1)), Color(255,255,255), Vector((videoDimX-1),(videoDimY-1)-size), Color(255,255,255));
+}
+double core_getTime() {
+    struct timeval tv;
+    if(gettimeofday(&tv,NULL) > -1) {
+		lastGetTime = (double)tv.tv_sec + ((double)tv.tv_usec)/(1000.0*1000.0);
+	}
+	return lastGetTime;
 }
 void core_close() {
 	pair_close();

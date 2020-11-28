@@ -162,7 +162,7 @@ void CRoundVisualizer::draw(double elapsedTime)
 	
 	//center accent with black outline
 	if(style==STYLE_FULL || style==STYLE_NO_WAVE || style==STYLE_NO_SPEC) {
-		accRotate += (0.0f + intensity*1.5f)*elapsedTime;
+		accRotate += (0.0f + intensity*2.0f)*elapsedTime;
 		while(accRotate > M_PI*2.0f) accRotate -= M_PI*2.0f;
 		int accRadius = fmin((float)videoDimX/5.0f + 0.2f*(float)videoDimX*bassIntensity, (float)videoDimY/5.0f + 0.2f*(float)videoDimY*bassIntensity);
 		if(style==STYLE_NO_SPEC) accRadius = 1.5f*(float)accRadius;
