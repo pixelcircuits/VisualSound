@@ -1,25 +1,25 @@
 //-----------------------------------------------------------------------------------------
-// Title:	Straight Music Visualizer
+// Title:	Geometry Music Visualizer
 // Program: VisualSound
 // Authors: Stephen Monn
 //-----------------------------------------------------------------------------------------
-#ifndef STRAIGHT_VISUALIZER_H
-#define STRAIGHT_VISUALIZER_H
+#ifndef GEOMETRY_VISUALIZER_H
+#define GEOMETRY_VISUALIZER_H
 
 #include "../IVisualizer.h"
 
 class CVideoDriver;
 class CSoundAnalyzer;
 
-//! Straight Music Visualizer
-class CStraightVisualizer : public IVisualizer
+//! Geometry Music Visualizer
+class CGeometryVisualizer : public IVisualizer
 {
 public:
 	//! Main Constructor
-	CStraightVisualizer(CVideoDriver* vd, CSoundAnalyzer* sa, int r);
+	CGeometryVisualizer(CVideoDriver* vd, CSoundAnalyzer* sa);
 
 	//! Destructor
-	~CStraightVisualizer();
+	~CGeometryVisualizer();
 
 	//! Sets up the visualizer
 	void setup();
@@ -49,7 +49,7 @@ protected:
 	Color color1;
 	Color color2;
 	int style;
-	int rotation;
+	float accRotate;
 };
 
 #endif

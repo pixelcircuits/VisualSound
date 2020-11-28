@@ -1,25 +1,27 @@
 //-----------------------------------------------------------------------------------------
-// Title:	Round Music Visualizer
+// Title:	Particle Music Visualizer
 // Program: VisualSound
 // Authors: Stephen Monn
 //-----------------------------------------------------------------------------------------
-#ifndef ROUND_VISUALIZER_H
-#define ROUND_VISUALIZER_H
+#ifndef PARTICLE_VISUALIZER_H
+#define PARTICLE_VISUALIZER_H
 
 #include "../IVisualizer.h"
+
+#define MAX_PARTICLES 1000
 
 class CVideoDriver;
 class CSoundAnalyzer;
 
-//! Round Music Visualizer
-class CRoundVisualizer : public IVisualizer
+//! Particle Music Visualizer
+class CParticleVisualizer : public IVisualizer
 {
 public:
 	//! Main Constructor
-	CRoundVisualizer(CVideoDriver* vd, CSoundAnalyzer* sa, int r);
+	CParticleVisualizer(CVideoDriver* vd, CSoundAnalyzer* sa);
 
 	//! Destructor
-	~CRoundVisualizer();
+	~CParticleVisualizer();
 
 	//! Sets up the visualizer
 	void setup();
@@ -49,7 +51,12 @@ protected:
 	Color color1;
 	Color color2;
 	int style;
-	int rotation;
+	
+	float particlePos[MAX_PARTICLES][3];
+	float particleVel[MAX_PARTICLES][3];
+	double particleVal[MAX_PARTICLES];
+	double particleVal2[MAX_PARTICLES];
+	bool particleActive[MAX_PARTICLES];
 	float accRotate;
 };
 
