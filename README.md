@@ -1,5 +1,5 @@
-# VisualSound
-Bluetooth Speaker Visualizer powered by Raspberry Pi
+# VisualSound (LED Cube)
+Bluetooth Speaker Visualizer powered by Raspberry Pi (LED Cube Version)
 
 ## Software Setup
 Please follow these steps to install and setup the Visualizer on a Raspberry Pi 3 (other Raspberry Pi versions not yet supported).
@@ -58,19 +58,9 @@ sudo nano /boot/config.txt
 ```
 
 ### 4. Install the LED Panel and LED Strip library
-a) Run the following commands to install the LED Panel library
+a) Run the following commands to install the library used for SPI
 ```
-cd /home/pi
-git clone https://github.com/hzeller/rpi-rgb-led-matrix.git
-cd rpi-rgb-led-matrix
-make
-```
-b) Run the following commands to install the LED Strip library
-```
-cd /home/pi
-git clone https://github.com/jgarff/rpi_ws281x
-cd rpi_ws281x
-scons
+sudo apt-get install wiringpi
 ```
 
 ### 5. Build and Install VisualSound
